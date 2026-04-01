@@ -3,18 +3,692 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Weather Data API</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #0f1117;
+        color: #e0e0e0;
+        min-height: 100vh;
+      }
+
+      .hero {
+        background: linear-gradient(
+          135deg,
+          #1a1f35 0%,
+          #0d1b2a 50%,
+          #1a2744 100%
+        );
+        padding: 50px 60px 40px;
+        text-align: center;
+        border-bottom: 1px solid #2a3550;
+      }
+      .hero h1 {
+        font-size: 3em;
+        color: #ffffff;
+        letter-spacing: -1px;
+      }
+      .hero h1 span {
+        color: #4e9af1;
+      }
+      .hero p {
+        color: #8899aa;
+        font-size: 1em;
+        margin-top: 8px;
+      }
+
+      .stats {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+      }
+      .stat-card {
+        background: rgba(30, 58, 95, 0.4);
+        border: 1px solid #2a3550;
+        border-radius: 8px;
+        padding: 8px 20px;
+        text-align: center;
+        min-width: 90px;
+      }
+      .stat-card .number {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #4e9af1;
+      }
+      .stat-card .label {
+        color: #8899aa;
+        font-size: 0.7em;
+        margin-top: 2px;
+      }
+
+      .endpoints-hero {
+        width: 100%;
+        margin-top: 30px;
+        text-align: left;
+        padding: 0 40px;
+      }
+      .endpoints-hero h2 {
+        color: #ffffff;
+        font-size: 1.1em;
+        margin-bottom: 14px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #2a3550;
+      }
+      .endpoints-hero h2 span {
+        color: #4e9af1;
+        margin-right: 6px;
+      }
+
+      .endpoints-row {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 12px;
+      }
+      .endpoint-card {
+        display: flex;
+        flex-direction: column;
+        background: rgba(10, 18, 32, 0.9);
+        border: 1px solid #2a3550;
+        border-radius: 8px;
+        padding: 14px;
+        transition: border-color 0.2s;
+      }
+      .endpoint-card:hover {
+        border-color: #4e9af1;
+      }
+      .endpoint-header {
+        margin-bottom: 6px;
+      }
+      .method {
+        display: inline-block;
+        background: #1e3a5f;
+        color: #4e9af1;
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-size: 0.68em;
+        font-weight: bold;
+        letter-spacing: 1px;
+        margin-right: 4px;
+      }
+      .route {
+        font-family: "Courier New", monospace;
+        color: #a0c4ff;
+        font-size: 0.72em;
+        word-break: break-all;
+        line-height: 1.4;
+      }
+      .endpoint-desc {
+        color: #8899aa;
+        font-size: 0.78em;
+        margin: 6px 0;
+        line-height: 1.4;
+      }
+      code {
+        background: #0d1b2e;
+        color: #4e9af1;
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-size: 0.8em;
+      }
+
+      .response-preview {
+        flex: 1;
+        background: #060c14;
+        border: 1px solid #1e2a3a;
+        border-radius: 6px;
+        padding: 10px 10px 8px;
+        margin: 8px 0;
+        position: relative;
+      }
+      .preview-label {
+        position: absolute;
+        top: -9px;
+        left: 8px;
+        background: #0f1117;
+        color: #4e9af1;
+        font-size: 0.65em;
+        padding: 1px 6px;
+        border-radius: 4px;
+        border: 1px solid #2a3550;
+      }
+      .response-preview pre {
+        color: #7ec8a0;
+        font-family: "Courier New", monospace;
+        font-size: 0.7em;
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .try-links {
+        margin-top: 8px;
+      }
+      .try-link {
+        color: #4e9af1;
+        font-size: 0.75em;
+        text-decoration: none;
+        background: #0d1b2e;
+        padding: 3px 8px;
+        border-radius: 4px;
+        border: 1px solid #2a5a8f;
+        margin-right: 4px;
+        margin-top: 4px;
+        display: inline-block;
+      }
+      .try-link:hover {
+        background: #1a3a5f;
+      }
+
+      .divider {
+        border: none;
+        border-top: 2px solid #2a3550;
+      }
+
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+
+      h2 {
+        font-size: 1.2em;
+        color: #ffffff;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #2a3550;
+      }
+      h2 span {
+        color: #4e9af1;
+        margin-right: 8px;
+      }
+
+      .search-section {
+        background: #1a1f2e;
+        border: 1px solid #2a3550;
+        border-radius: 10px;
+        padding: 24px;
+        margin-bottom: 30px;
+      }
+      .search-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+      .search-row input {
+        flex: 1;
+        padding: 10px 16px;
+        background: #0f1117;
+        border: 1px solid #2a3550;
+        border-radius: 6px;
+        color: #e0e0e0;
+        font-size: 0.95em;
+        outline: none;
+      }
+      .search-row input:focus {
+        border-color: #4e9af1;
+      }
+      .search-row button {
+        padding: 10px 24px;
+        background: #4e9af1;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      .search-row button:hover {
+        background: #3a8ae0;
+      }
+
+      .result-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9em;
+      }
+      .result-table th {
+        background: #1e3a5f;
+        color: #4e9af1;
+        padding: 10px 14px;
+        text-align: left;
+      }
+      .result-table td {
+        padding: 10px 14px;
+        border-bottom: 1px solid #2a3550;
+        color: #c0d0e0;
+      }
+      .result-table tr:hover td {
+        background: #1a2a3f;
+      }
+      .result-table a {
+        color: #4e9af1;
+        text-decoration: none;
+        font-size: 0.85em;
+        margin-right: 8px;
+      }
+
+      .tester-section {
+        background: #1a1f2e;
+        border: 1px solid #2a3550;
+        border-radius: 10px;
+        padding: 24px;
+        margin-bottom: 30px;
+      }
+      .tester-grid {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+      }
+      .tester-row {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        flex: 1;
+        min-width: 140px;
+      }
+      .tester-row label {
+        color: #8899aa;
+        font-size: 0.85em;
+      }
+      .tester-row input,
+      .tester-row select {
+        padding: 10px;
+        background: #0f1117;
+        border: 1px solid #2a3550;
+        border-radius: 6px;
+        color: #e0e0e0;
+        font-size: 0.9em;
+        outline: none;
+      }
+      .tester-row input:focus,
+      .tester-row select:focus {
+        border-color: #4e9af1;
+      }
+      .test-btn {
+        padding: 10px 28px;
+        background: #4e9af1;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 0.95em;
+      }
+      .test-btn:hover {
+        background: #3a8ae0;
+      }
+      .tester-result {
+        margin-top: 16px;
+        background: #0a0f1a;
+        border: 1px solid #1e2a3a;
+        border-radius: 6px;
+        padding: 16px;
+      }
+      .result-url {
+        color: #8899aa;
+        font-size: 0.8em;
+        font-family: monospace;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #1e2a3a;
+      }
+      .tester-result pre {
+        color: #7ec8a0;
+        font-family: "Courier New", monospace;
+        font-size: 0.85em;
+        margin: 0;
+        white-space: pre-wrap;
+      }
+
+      .stations-section {
+        background: #1a1f2e;
+        border: 1px solid #2a3550;
+        border-radius: 10px;
+        padding: 24px;
+        overflow-x: auto;
+      }
+      .stations-section table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85em;
+      }
+      .stations-section th {
+        background: #1e3a5f;
+        color: #4e9af1;
+        padding: 10px 14px;
+        text-align: left;
+      }
+      .stations-section td {
+        padding: 8px 14px;
+        border-bottom: 1px solid #1e2a3a;
+        color: #c0d0e0;
+      }
+      .stations-section tr:hover td {
+        background: #1a2a3f;
+      }
+
+      footer {
+        text-align: center;
+        padding: 30px;
+        color: #445566;
+        font-size: 0.85em;
+        border-top: 1px solid #1a2030;
+        margin-top: 40px;
+      }
+      footer span {
+        color: #4e9af1;
+      }
+    </style>
   </head>
   <body>
-    <h1>Weather API</h1>
-    <p>URL Format: http://127.0.0.1:5000/api/v1/station/date</p>
-    <p>
-      For One Station For One Date: http://127.0.0.1:5000/api/v1/10/1988-10-25
-    </p>
-    <p>For One Station For All Dates: http://127.0.0.1:5000/api/v1/10</p>
-    <p>
-      For One Station For One Year: http://127.0.0.1:5000/api/v1/yearly/10/year
-    </p>
-    <p>{{data|safe}}</p>
+    <!-- ── Hero ── -->
+    <div class="hero">
+      <h1>🌤️ Weather <span>Data API</span></h1>
+      <p>Historical temperature data for European weather stations</p>
+
+      <div class="stats">
+        <div class="stat-card">
+          <div class="number">100+</div>
+          <div class="label">Stations</div>
+        </div>
+        <div class="stat-card">
+          <div class="number">5</div>
+          <div class="label">Endpoints</div>
+        </div>
+        <div class="stat-card">
+          <div class="number">°C / °F</div>
+          <div class="label">Units</div>
+        </div>
+        <div class="stat-card">
+          <div class="number">JSON</div>
+          <div class="label">Format</div>
+        </div>
+      </div>
+
+      <div class="endpoints-hero">
+        <h2><span>📡</span>API Endpoints</h2>
+        <div class="endpoints-row">
+          <div class="endpoint-card">
+            <div class="endpoint-header">
+              <span class="method">GET</span>
+              <span class="route">/api/v1/&lt;station&gt;/&lt;date&gt;</span>
+            </div>
+            <p class="endpoint-desc">
+              Temperature for a specific station and date. Add
+              <code>?unit=fahrenheit</code> for Fahrenheit.
+            </p>
+            <div class="response-preview">
+              <span class="preview-label">Response</span>
+              <pre>
+{
+  "station_id": "10",
+  "station_name": "VAEXJOE",
+  "date": "1988-10-25",
+  "temperature": -0.9,
+  "unit": "celsius",
+  "status": "success"
+}</pre
+              >
+            </div>
+            <div class="try-links">
+              <a class="try-link" href="/api/v1/10/1988-10-25">▶ Try it</a>
+              <a class="try-link" href="/api/v1/10/1988-10-25?unit=fahrenheit"
+                >▶ °F</a
+              >
+            </div>
+          </div>
+
+          <div class="endpoint-card">
+            <div class="endpoint-header">
+              <span class="method">GET</span>
+              <span class="route">/api/v1/&lt;station&gt;</span>
+            </div>
+            <p class="endpoint-desc">
+              All historical temperature data for a station.
+            </p>
+            <div class="response-preview">
+              <span class="preview-label">Response</span>
+              <pre>
+[
+  {
+    "DATE": "1960-01-01",
+    "TG": -12,
+    "Q_TG": 0
+  },
+  {
+    "DATE": "1960-01-02",
+    "TG": -21,
+    "Q_TG": 0
+  },
+  ...
+]</pre
+              >
+            </div>
+            <div class="try-links">
+              <a class="try-link" href="/api/v1/10">▶ Try it</a>
+            </div>
+          </div>
+
+          <div class="endpoint-card">
+            <div class="endpoint-header">
+              <span class="method">GET</span>
+              <span class="route"
+                >/api/v1/yearly/&lt;station&gt;/&lt;year&gt;</span
+              >
+            </div>
+            <p class="endpoint-desc">
+              All data for a station in a specific year.
+            </p>
+            <div class="response-preview">
+              <span class="preview-label">Response</span>
+              <pre>
+[
+  {
+    "DATE": "1988-01-01",
+    "TG": -21,
+    "Q_TG": 0
+  },
+  ...
+  {
+    "DATE": "1988-12-31",
+    "TG": 15,
+    "Q_TG": 0
+  }
+]</pre
+              >
+            </div>
+            <div class="try-links">
+              <a class="try-link" href="/api/v1/yearly/10/1988">▶ Try it</a>
+            </div>
+          </div>
+
+          <div class="endpoint-card">
+            <div class="endpoint-header">
+              <span class="method">GET</span>
+              <span class="route"
+                >/api/v1/range/&lt;station&gt;/&lt;start&gt;/&lt;end&gt;</span
+              >
+            </div>
+            <p class="endpoint-desc">Data for a station between two dates.</p>
+            <div class="response-preview">
+              <span class="preview-label">Response</span>
+              <pre>
+[
+  {
+    "DATE": "1988-01-01",
+    "TG": -21,
+    "Q_TG": 0
+  },
+  ...
+  {
+    "DATE": "1988-03-31",
+    "TG": 42,
+    "Q_TG": 0
+  }
+]</pre
+              >
+            </div>
+            <div class="try-links">
+              <a class="try-link" href="/api/v1/range/10/1988-01-01/1988-03-31"
+                >▶ Try it</a
+              >
+            </div>
+          </div>
+
+          <div class="endpoint-card">
+            <div class="endpoint-header">
+              <span class="method">GET</span>
+              <span class="route">/api/v1/stations?name=&lt;query&gt;</span>
+            </div>
+            <p class="endpoint-desc">Search for weather stations by name.</p>
+            <div class="response-preview">
+              <span class="preview-label">Response</span>
+              <pre>
+[
+  {
+    "STAID": 10,
+    "STANAME": "VAEXJOE"
+  },
+  {
+    "STAID": 11,
+    "STANAME": "STOCKHOLM"
+  }
+]</pre
+              >
+            </div>
+            <div class="try-links">
+              <a class="try-link" href="/api/v1/stations?name=london"
+                >▶ London</a
+              >
+              <a class="try-link" href="/api/v1/stations">▶ All</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <div class="container">
+      <!-- Search -->
+      <div class="search-section">
+        <h2><span>🔍</span>Search Stations</h2>
+        <div class="search-row">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search by station name e.g. London, Paris..."
+          />
+          <button onclick="searchStation()">Search</button>
+        </div>
+        <div id="searchResult"></div>
+      </div>
+
+      <div class="tester-section">
+        <h2><span>⚡</span>Live API Tester</h2>
+        <div class="tester-grid">
+          <div class="tester-row">
+            <label>Station ID</label>
+            <input type="number" id="t-station" value="10" min="1" />
+          </div>
+          <div class="tester-row">
+            <label>Date</label>
+            <input type="date" id="t-date" value="1988-10-25" />
+          </div>
+          <div class="tester-row">
+            <label>Unit</label>
+            <select id="t-unit">
+              <option value="celsius">Celsius</option>
+              <option value="fahrenheit">Fahrenheit</option>
+            </select>
+          </div>
+        </div>
+        <button class="test-btn" onclick="testAPI()">▶ Run Request</button>
+        <div class="tester-result" id="testerResult" style="display: none">
+          <div class="result-url" id="resultUrl"></div>
+          <pre id="resultJson"></pre>
+        </div>
+      </div>
+
+      <div class="stations-section">
+        <h2><span>📋</span>All Stations</h2>
+        {{ data | safe }}
+      </div>
+    </div>
+
+    <footer>
+      Built with <span>Flask</span> + <span>Pandas</span> · Historical Weather
+      Data API
+    </footer>
+
+    <script>
+      function testAPI() {
+        const station = document.getElementById("t-station").value;
+        const date = document.getElementById("t-date").value;
+        const unit = document.getElementById("t-unit").value;
+        const dateObj = new Date(date);
+        const formattedDate = dateObj.toISOString().split("T")[0];
+        const url = `/api/v1/${station}/${formattedDate}?unit=${unit}`;
+
+        document.getElementById("resultUrl").textContent = `GET ${url}`;
+        document.getElementById("testerResult").style.display = "block";
+        document.getElementById("resultJson").textContent = "Loading...";
+
+        fetch(url)
+          .then((r) => r.json())
+          .then((data) => {
+            document.getElementById("resultJson").textContent = JSON.stringify(
+              data,
+              null,
+              2,
+            );
+          })
+          .catch((err) => {
+            document.getElementById("resultJson").textContent = `Error: ${err}`;
+          });
+      }
+
+      function searchStation() {
+        const query = document.getElementById("searchInput").value;
+        fetch(`/api/v1/stations?name=${query}`)
+          .then((r) => r.json())
+          .then((data) => {
+            if (data.length === 0) {
+              document.getElementById("searchResult").innerHTML =
+                '<p style="color:#8899aa;margin-top:10px">No stations found.</p>';
+              return;
+            }
+            let html = `<table class="result-table">
+            <tr><th>ID</th><th>Name</th><th>Quick Links</th></tr>`;
+            data.slice(0, 20).forEach((s) => {
+              html += `<tr>
+              <td>${s.STAID}</td>
+              <td>${s.STANAME}</td>
+              <td>
+                <a href="/api/v1/${s.STAID}/1988-01-01">📅 Sample</a>
+                <a href="/api/v1/yearly/${s.STAID}/1988">📆 1988</a>
+                <a href="/api/v1/${s.STAID}">📊 All</a>
+              </td>
+            </tr>`;
+            });
+            html += "</table>";
+            document.getElementById("searchResult").innerHTML = html;
+          });
+      }
+
+      document
+        .getElementById("searchInput")
+        .addEventListener("keypress", function (e) {
+          if (e.key === "Enter") searchStation();
+        });
+    </script>
   </body>
 </html>
